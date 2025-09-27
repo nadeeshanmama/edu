@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="500" viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .dark-bg { fill: #1a1a1a; }
+    .window { fill: #2a2a2a; stroke: #3a3a3a; stroke-width: 2; }
+    .light { fill: #e0e0e0; opacity: 0.2; }
+    .desk { fill: #3a2a1a; }
+    .lamp { fill: #2a2a2a; }
+    .lamp-light { fill: #ffcc66; opacity: 0.8; }
+    .person { fill: #444444; }
+    .laptop { fill: #333333; stroke: #444444; stroke-width: 1; }
+    .screen { fill: #1e90ff; opacity: 0.8; }
+    .book { fill: #553322; stroke: #442211; stroke-width: 1; }
+    .page { fill: #f5f5f5; }
+    .cup { fill: #aa7744; }
+    .coffee { fill: #553311; }
+  </style>
+  
+  <!-- Background -->
+  <rect class="dark-bg" x="0" y="0" width="400" height="500" />
+  
+  <!-- Window -->
+  <rect class="window" x="50" y="50" width="120" height="180" rx="5" />
+  <rect class="light" x="55" y="55" width="110" height="170" rx="3" />
+  
+  <!-- Lamp light effect -->
+  <ellipse class="lamp-light" cx="200" cy="150" rx="150" ry="100" opacity="0.3" />
+  
+  <!-- Desk -->
+  <rect class="desk" x="40" y="300" width="320" height="20" />
+  
+  <!-- Lamp -->
+  <path class="lamp" d="M180,150 L160,300 L170,300 L190,150 Z" />
+  <ellipse class="lamp" cx="185" cy="140" rx="25" ry="10" />
+  
+  <!-- Person silhouette -->
+  <path class="person" d="M250,200 C270,180 280,220 280,250 L280,300 L260,300 L260,260 C260,260 240,280 230,260 L230,300 L210,300 L210,250 C210,220 230,180 250,200 Z" />
+  <circle class="person" cx="250" cy="180" r="20" />
+  
+  <!-- Laptop -->
+  <rect class="laptop" x="180" y="260" width="80" height="60" rx="5" />
+  <rect class="screen" x="185" y="265" width="70" height="45" rx="3" />
+  
+  <!-- Books -->
+  <rect class="book" x="100" y="270" width="60" height="30" />
+  <rect class="page" x="105" y="275" width="50" height="20" />
+  
+  <!-- Coffee cup -->
+  <rect class="cup" x="280" y="270" width="20" height="30" rx="5" />
+  <rect class="coffee" x="283" y="275" width="14" height="10" />
+</svg>
