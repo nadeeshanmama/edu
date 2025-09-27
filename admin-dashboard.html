@@ -1,276 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduPeak - Admin Dashboard</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard</title>
 </head>
 <body>
-    <div class="dashboard-container">
-        <header class="dashboard-header">
-            <h1>Admin Dashboard</h1>
-            <div class="user-info">
-                <img id="userPhoto" src="default-avatar.svg" alt="Admin">
-                <span id="userName">Loading...</span>
-                <button id="logoutBtn" class="logout-btn">Logout</button>
-            </div>
-        </header>
+<h2>Add Lesson to Student</h2>
+<form id="addLessonForm">
+  <input type="email" id="studentEmail" placeholder="Student Email" required>
+  <input type="text" id="youtubeId" placeholder="YouTube Video ID" required>
+  <button type="submit">Add Lesson</button>
+</form>
 
-        <div class="dashboard-content">
-            <div class="admin-controls">
-                <h2>Add Lesson Access</h2>
-                <form id="addLessonForm" class="admin-form">
-                    <div class="form-group">
-                        <label for="studentEmail">Student Email</label>
-                        <input type="email" id="studentEmail" required placeholder="student@example.com">
-                    </div>
-                    <div class="form-group">
-                        <label for="lessonMonth">Lesson Month</label>
-                        <select id="lessonMonth" required>
-                            <option value="">Select Month</option>
-                            <option value="January">January</option>
-                            <option value="February">February</option>
-                            <option value="March">March</option>
-                            <option value="April">April</option>
-                            <option value="May">May</option>
-                            <option value="June">June</option>
-                            <option value="July">July</option>
-                            <option value="August">August</option>
-                            <option value="September">September</option>
-                            <option value="October">October</option>
-                            <option value="November">November</option>
-                            <option value="December">December</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="videoUrl">YouTube Embed URL</label>
-                        <input type="text" id="videoUrl" required placeholder="https://www.youtube.com/embed/...">
-                    </div>
-                    <button type="submit" class="add-lesson-btn">Add</button>
-                </form>
-            </div>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-            <h2>Student Access Management</h2>
-            <div id="studentList" class="student-list">
-                <!-- Student list will be loaded dynamically -->
-                <div class="student-item">
-                    <div>
-                        <div class="student-email">Loading students...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAEkxTwVTNOiDr5nqJzlF32GIhlts-Hr8k",
+    authDomain: "edupeak-bea8c.firebaseapp.com",
+    projectId: "edupeak-bea8c",
+    storageBucket: "edupeak-bea8c.appspot.com",
+    messagingSenderId: "783539303255",
+    appId: "1:783539303255:web:4bb068761756a756dac412",
+  };
 
-    <script>
-        // Firebase configuration
-        const firebaseConfig = {
-  apiKey: "AIzaSyAEkxTwVTNOiDr5nqJzlF32GIhlts-HpRk",
-  authDomain: "edupeak-bea8c.firebaseapp.com",
-  projectId: "edupeak-bea8c",
-  storageBucket: "edupeak-bea8c.firebasestorage.app",
-  messagingSenderId: "783539303255",
-  appId: "1:783539303255:web:4bb068761756a756dac412",
-  measurementId: "G-SCMVNDB400"
-        };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+  document.getElementById("addLessonForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("studentEmail").value;
+    const youtubeId = document.getElementById("youtubeId").value;
 
-        // Admin emails (limited to 3)
-        const adminEmails = ['admin1@example.com', 'admin2@example.com', 'admin3@example.com'];
+    const studentRef = doc(db, "students", email);
+    const studentSnap = await getDoc(studentRef);
 
-        // DOM Elements
-        const userPhoto = document.getElementById('userPhoto');
-        const userName = document.getElementById('userName');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const addLessonForm = document.getElementById('addLessonForm');
-        const studentList = document.getElementById('studentList');
+    if (!studentSnap.exists()) {
+      alert("Student not found");
+      return;
+    }
 
-        // Check authentication state
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                // Check if user is admin
-                if (adminEmails.includes(user.email)) {
-                    // Update admin info
-                    userPhoto.src = user.photoURL || 'default-avatar.svg';
-                    userName.textContent = user.displayName || user.email;
-                    
-                    // Load student access data
-                    loadStudentAccessData();
-                } else {
-                    // Redirect non-admin users to student dashboard
-                    alert('You do not have admin privileges.');
-                    window.location.href = 'dashboard.html';
-                }
-            } else {
-                // Redirect to login if not authenticated
-                window.location.href = 'index.html';
-            }
-        });
+    await updateDoc(studentRef, {
+      lessons: arrayUnion(youtubeId)
+    });
 
-        // Add lesson access form submission
-        if (addLessonForm) {
-            addLessonForm.addEventListener('submit', e => {
-                e.preventDefault();
-                
-                const studentEmail = document.getElementById('studentEmail').value;
-                const lessonMonth = document.getElementById('lessonMonth').value;
-                const videoUrl = document.getElementById('videoUrl').value;
-                
-                // Create lesson document in Firestore
-                const lessonData = {
-                    title: `${lessonMonth} Month Lesson (Python)`,
-                    description: `ශ්‍රී අධ්‍යාපනයකට රැය 7 සිට 9 දක්වා Zoom මගින්ද සතියේ පැවැත්වේ. සෙසු විස්තරය හෝ ඔබගේ ප්‍රශ්නයක පැමිණ විමසන්න හැකියි. වැඩිදුර තොරතුරු දැනගැනීම සඳහා Telegram සමූහයට පිවිසෙන්න.`,
-                    videoUrl: videoUrl,
-                    telegramLink: 'https://t.me/cmwithmn',
-                    accessEmails: [studentEmail],
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
-                
-                db.collection('lessons').add(lessonData)
-                    .then(() => {
-                        alert(`Lesson access granted to ${studentEmail} for ${lessonMonth} Month`);
-                        addLessonForm.reset();
-                        loadStudentAccessData(); // Refresh the student list
-                    })
-                    .catch(error => {
-                        console.error("Error adding lesson:", error);
-                        alert("Error adding lesson. Please try again.");
-                    });
-            });
-        }
-
-        // Load student access data from Firestore
-        function loadStudentAccessData() {
-            studentList.innerHTML = ''; // Clear existing content
-            
-            // Get all lessons
-            db.collection('lessons')
-                .orderBy('createdAt', 'desc')
-                .get()
-                .then(snapshot => {
-                    if (snapshot.empty) {
-                        studentList.innerHTML = '<div class="student-item"><div><div class="student-email">No student access data available</div></div></div>';
-                        return;
-                    }
-                    
-                    // Group lessons by student email
-                    const studentLessons = {};
-                    
-                    snapshot.forEach(doc => {
-                        const lesson = doc.data();
-                        const lessonId = doc.id;
-                        
-                        lesson.accessEmails.forEach(email => {
-                            if (!studentLessons[email]) {
-                                studentLessons[email] = [];
-                            }
-                            
-                            studentLessons[email].push({
-                                id: lessonId,
-                                title: lesson.title
-                            });
-                        });
-                    });
-                    
-                    // Create student items
-                    Object.keys(studentLessons).forEach(email => {
-                        const studentItem = createStudentItem(email, studentLessons[email]);
-                        studentList.appendChild(studentItem);
-                    });
-                })
-                .catch(error => {
-                    console.error("Error loading student data:", error);
-                    studentList.innerHTML = '<div class="student-item"><div><div class="student-email">Error loading student data</div></div></div>';
-                });
-        }
-
-        // Create student item element
-        function createStudentItem(email, lessons) {
-            const item = document.createElement('div');
-            item.className = 'student-item';
-            
-            const info = document.createElement('div');
-            
-            const emailDiv = document.createElement('div');
-            emailDiv.className = 'student-email';
-            emailDiv.textContent = email;
-            
-            const lessonsDiv = document.createElement('div');
-            lessonsDiv.className = 'student-lessons';
-            lessonsDiv.textContent = `Access to: ${lessons.map(l => l.title.split(' ')[0]).join(', ')}`;
-            
-            info.appendChild(emailDiv);
-            info.appendChild(lessonsDiv);
-            
-            const actions = document.createElement('div');
-            
-            lessons.forEach(lesson => {
-                const removeBtn = document.createElement('button');
-                removeBtn.className = 'remove-btn';
-                removeBtn.textContent = `Remove ${lesson.title.split(' ')[0]}`;
-                removeBtn.dataset.lessonId = lesson.id;
-                removeBtn.dataset.email = email;
-                
-                removeBtn.addEventListener('click', () => {
-                    removeStudentAccess(lesson.id, email);
-                });
-                
-                actions.appendChild(removeBtn);
-            });
-            
-            item.appendChild(info);
-            item.appendChild(actions);
-            
-            return item;
-        }
-
-        // Remove student access to a lesson
-        function removeStudentAccess(lessonId, email) {
-            if (confirm(`Are you sure you want to remove access for ${email}?`)) {
-                db.collection('lessons').doc(lessonId).get()
-                    .then(doc => {
-                        if (!doc.exists) {
-                            throw new Error('Lesson not found');
-                        }
-                        
-                        const lesson = doc.data();
-                        const updatedEmails = lesson.accessEmails.filter(e => e !== email);
-                        
-                        return db.collection('lessons').doc(lessonId).update({
-                            accessEmails: updatedEmails
-                        });
-                    })
-                    .then(() => {
-                        alert(`Access removed for ${email}`);
-                        loadStudentAccessData(); // Refresh the student list
-                    })
-                    .catch(error => {
-                        console.error("Error removing access:", error);
-                        alert("Error removing access. Please try again.");
-                    });
-            }
-        }
-
-        // Logout functionality
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                auth.signOut()
-                    .then(() => {
-                        window.location.href = 'index.html';
-                    })
-                    .catch(error => {
-                        console.error("Error signing out:", error);
-                    });
-            });
-        }
-    </script>
+    alert("Lesson added!");
+    document.getElementById("addLessonForm").reset();
+  });
+</script>
 </body>
 </html>
