@@ -1,90 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Edupeak Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduPeak - Login</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
 <body>
-<h2>Login</h2>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-left">
+                <img src="study-image.svg" alt="Student studying">
+                <div class="tagline">ඔබේ ඉලක්කයේ Target එකට</div>
+            </div>
+            <div class="login-right">
+                <div class="logo">
+                    <h1>CM with MN</h1>
+                    <p>Combined Maths - Madushan Neranjan</p>
+                    <p>ඔබේ අරමුණ වෙත ගමන් සැලසුමකට පිවිසෙන්න</p>
+                </div>
+                <div class="colored-shapes">
+                    <div class="shape red-triangle"></div>
+                    <div class="shape green-square"></div>
+                    <div class="shape blue-x"></div>
+                    <div class="shape yellow-circle"></div>
+                </div>
+                <button id="googleLogin" class="google-btn">
+                    <img src="google-icon.svg" alt="Google">
+                    Continue with Google
+                </button>
+                <div class="social-links">
+                    <a href="#" class="facebook-icon">
+                        <img src="facebook-icon.svg" alt="Facebook">
+                    </a>
+                    <a href="#" class="youtube-icon">
+                        <img src="youtube-icon.svg" alt="YouTube">
+                    </a>
+                    <a href="#" class="telegram-icon">
+                        <img src="telegram-icon.svg" alt="Telegram">
+                    </a>
+                </div>
+                <div class="register-help">
+                    <a href="#">How to Register?</a>
+                </div>
+                <div class="contact">
+                    <p>Hotline Contact: 0741591704</p>
+                </div>
+                <div class="footer">
+                    <p>Powered by CMwithMN Developers</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<!-- Student Google login -->
-<button id="studentLogin">Student - Sign in with Google</button>
-
-<hr>
-
-<!-- Admin login -->
-<form id="adminLoginForm">
-  <input type="email" id="adminEmail" placeholder="Admin Email" required>
-  <input type="password" id="adminPass" placeholder="Password" required>
-  <button type="submit">Admin Login</button>
-</form>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-  const firebaseConfig = {
-  apiKey: "AIzaSyAEkxTwVTNOiDr5nqJzlF32GIhlts-HpRk",
-  authDomain: "edupeak-bea8c.firebaseapp.com",
-  projectId: "edupeak-bea8c",
-  storageBucket: "edupeak-bea8c.firebasestorage.app",
-  messagingSenderId: "783539303255",
-  appId: "1:783539303255:web:4bb068761756a756dac412",
-  measurementId: "G-SCMVNDB400"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-
-  // Admin allowed emails
-  const adminEmails = ["admin1@gmail.com","admin2@gmail.com","admin3@gmail.com"];
-
-  // Student login
-  document.getElementById("studentLogin").addEventListener("click", async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const email = result.user.email;
-
-      // Save student to Firestore if not exists
-      const studentRef = doc(db, "students", email);
-      const studentSnap = await getDoc(studentRef);
-      if (!studentSnap.exists()) {
-        await setDoc(studentRef, { lessons: [] });
-      }
-
-      // Redirect to student dashboard
-      localStorage.setItem("studentEmail", email);
-      window.location.href = "student-dashboard.html";
-
-    } catch (err) {
-      alert(err.message);
-    }
-  });
-
-  // Admin login
-  document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = document.getElementById("adminEmail").value;
-    const password = document.getElementById("adminPass").value;
-
-    if (!adminEmails.includes(email)) {
-      alert("This email is not allowed as admin");
-      return;
-    }
-
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      window.location.href = "admin-dashboard.html";
-    } catch (err) {
-      alert(err.message);
-    }
-  });
-</script>
+    <script src="app.js"></script>
 </body>
 </html>
-
-
