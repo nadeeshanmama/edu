@@ -16,12 +16,16 @@ const db = firebase.firestore();
 
 // DOM Elements
 const googleLoginBtn = document.getElementById('googleLogin');
+const adminLoginBtn = document.getElementById('adminLogin'); // <-- new button
+const adminEmailInput = document.getElementById('adminEmail'); // <-- new input
+const adminPassInput = document.getElementById('adminPass');   // <-- new input
+
+// Only one admin email
+const adminEmail = "umashiduwara890@gmail.com";
 
 // Check if user is already logged in
 auth.onAuthStateChanged(user => {
     if (user) {
-        // Only one admin email
-        const adminEmail = 'umashiduwara890@gmail.com';
         if (user.email === adminEmail) {
             window.location.href = 'admin-dashboard.html';
         } else {
@@ -29,7 +33,7 @@ auth.onAuthStateChanged(user => {
             db.collection('users').doc(user.uid).get()
                 .then(doc => {
                     if (!doc.exists) {
-                        db.collection('users').doc(user.uid).set({
+                        return db.collection('users').doc(user.uid).set({
                             email: user.email,
                             displayName: user.displayName,
                             photoURL: user.photoURL,
@@ -47,15 +51,40 @@ auth.onAuthStateChanged(user => {
     }
 });
 
+// Admin Email/Password Login
+if (adminLoginBtn) {
+    adminLoginBtn.addEventListener('click', () => {
+        const email = adminEmailInput.value.trim();
+        const password = adminPassInput.value;
 
-// Google Sign In
+        if (!email || !password) {
+            return alert("Please enter admin email and password");
+        }
+
+        auth.signInWithEmailAndPassword(email, password)
+            .then(result => {
+                if (result.user.email === adminEmail) {
+                    window.location.href = 'admin-dashboard.html';
+                } else {
+                    alert("This account is not authorized as admin.");
+                    auth.signOut();
+                }
+            })
+            .catch(error => {
+                console.error("Admin login failed:", error);
+                alert("Admin login failed: " + error.message);
+            });
+    });
+}
+
+// Google Sign In (for normal users)
 if (googleLoginBtn) {
     googleLoginBtn.addEventListener('click', () => {
         const provider = new firebase.auth.GoogleAuthProvider();
         auth.signInWithPopup(provider)
             .catch(error => {
-                console.error("Error during sign in:", error);
-                alert("Sign in failed. Please try again.");
+                console.error("Error during Google sign in:", error);
+                alert("Google sign in failed. Please try again.");
             });
     });
 }
