@@ -20,9 +20,9 @@ const googleLoginBtn = document.getElementById('googleLogin');
 // Check if user is already logged in
 auth.onAuthStateChanged(user => {
     if (user) {
-        // Check if user is admin
-        const adminEmails = ['umashiduwara890@gmail.com', 'admin2@example.com', 'admin3@example.com'];
-        if (adminEmails.includes(user.email)) {
+        // Only one admin email
+        const adminEmail = 'umashiduwara890@gmail.com';
+        if (user.email === adminEmail) {
             window.location.href = 'admin-dashboard.html';
         } else {
             // Store user info in Firestore if new user
@@ -46,6 +46,7 @@ auth.onAuthStateChanged(user => {
         }
     }
 });
+
 
 // Google Sign In
 if (googleLoginBtn) {
