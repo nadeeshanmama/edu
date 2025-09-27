@@ -21,7 +21,7 @@ const googleLoginBtn = document.getElementById('googleLogin');
 auth.onAuthStateChanged(user => {
     if (user) {
         // Check if user is admin
-        const adminEmails = ['admin1@example.com', 'admin2@example.com', 'admin3@example.com'];
+        const adminEmails = ['umashiduwara890@gmail.com', 'admin2@example.com', 'admin3@example.com'];
         if (adminEmails.includes(user.email)) {
             window.location.href = 'admin-dashboard.html';
         } else {
