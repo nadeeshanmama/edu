@@ -1,145 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduPeak - Student Dashboard</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Dashboard</title>
 </head>
 <body>
-    <div class="dashboard-container">
-        <header class="dashboard-header">
-            <h1>A/L 2026</h1>
-            <div class="user-info">
-                <img id="userPhoto" src="default-avatar.svg" alt="User">
-                <span id="userName">Loading...</span>
-                <button id="logoutBtn" class="logout-btn">Logout</button>
-            </div>
-        </header>
+<h2>My Lessons</h2>
+<div id="lessonsContainer"></div>
 
-        <div class="dashboard-content">
-            <h2>My Lessons</h2>
-            <div id="lessonsGrid" class="lessons-grid">
-                <!-- Lessons will be loaded dynamically -->
-                <div class="lesson-card">
-                    <h3>Loading lessons...</h3>
-                </div>
-            </div>
-        </div>
-    </div>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    <script>
-        // Firebase configuration
-        const firebaseConfig = {
-  apiKey: "AIzaSyAEkxTwVTNOiDr5nqJzlF32GIhlts-HpRk",
-  authDomain: "edupeak-bea8c.firebaseapp.com",
-  projectId: "edupeak-bea8c",
-  storageBucket: "edupeak-bea8c.firebasestorage.app",
-  messagingSenderId: "783539303255",
-  appId: "1:783539303255:web:4bb068761756a756dac412",
-  measurementId: "G-SCMVNDB400"
-        };
+  const firebaseConfig = {
+    apiKey: "AIzaSyAEkxTwVTNOiDr5nqJzlF32GIhlts-Hr8k",
+    authDomain: "edupeak-bea8c.firebaseapp.com",
+    projectId: "edupeak-bea8c",
+    storageBucket: "edupeak-bea8c.appspot.com",
+    messagingSenderId: "783539303255",
+    appId: "1:783539303255:web:xxxx"
+  };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-        // DOM Elements
-        const userPhoto = document.getElementById('userPhoto');
-        const userName = document.getElementById('userName');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const lessonsGrid = document.getElementById('lessonsGrid');
+  const email = localStorage.getItem("studentEmail");
+  if (!email) {
+    window.location.href = "index.html"; // not logged in
+  }
 
-        // Check authentication state
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                // Update user info
-                userPhoto.src = user.photoURL || 'default-avatar.svg';
-                userName.textContent = user.displayName || user.email;
-                
-                // Load user's lessons
-                loadUserLessons(user.email);
-            } else {
-                // Redirect to login if not authenticated
-                window.location.href = 'index.html';
-            }
-        });
+  const container = document.getElementById("lessonsContainer");
 
-        // Load user's lessons from Firestore
-        function loadUserLessons(userEmail) {
-            lessonsGrid.innerHTML = ''; // Clear existing content
-            
-            db.collection('lessons')
-                .where('accessEmails', 'array-contains', userEmail)
-                .get()
-                .then(snapshot => {
-                    if (snapshot.empty) {
-                        lessonsGrid.innerHTML = '<div class="lesson-card"><h3>No lessons available</h3><div class="lesson-info">You don\'t have access to any lessons yet. Please contact your administrator.</div></div>';
-                        return;
-                    }
-                    
-                    snapshot.forEach(doc => {
-                        const lesson = doc.data();
-                        const lessonCard = createLessonCard(lesson);
-                        lessonsGrid.appendChild(lessonCard);
-                    });
-                })
-                .catch(error => {
-                    console.error("Error loading lessons:", error);
-                    lessonsGrid.innerHTML = '<div class="lesson-card"><h3>Error loading lessons</h3><div class="lesson-info">There was an error loading your lessons. Please try again later.</div></div>';
-                });
-        }
+  async function loadLessons() {
+    const studentRef = doc(db, "students", email);
+    const studentSnap = await getDoc(studentRef);
+    if (!studentSnap.exists()) {
+      container.innerHTML = "<p>No lessons assigned yet.</p>";
+      return;
+    }
 
-        // Create lesson card element
-        function createLessonCard(lesson) {
-            const card = document.createElement('div');
-            card.className = 'lesson-card';
-            
-            const title = document.createElement('h3');
-            title.textContent = lesson.title;
-            
-            const info = document.createElement('div');
-            info.className = 'lesson-info';
-            
-            const description = document.createElement('p');
-            description.textContent = lesson.description;
-            
-            const videoContainer = document.createElement('div');
-            videoContainer.className = 'video-container';
-            videoContainer.innerHTML = `<iframe width="100%" height="180" src="${lesson.videoUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-            
-            const visitBtn = document.createElement('a');
-            visitBtn.href = lesson.telegramLink || '#';
-            visitBtn.className = 'visit-btn';
-            visitBtn.textContent = 'Visit';
-            visitBtn.target = '_blank';
-            
-            info.appendChild(description);
-            info.appendChild(videoContainer);
-            info.appendChild(visitBtn);
-            
-            card.appendChild(title);
-            card.appendChild(info);
-            
-            return card;
-        }
+    const lessons = studentSnap.data().lessons;
+    container.innerHTML = "";
+    lessons.forEach(id => {
+      const iframe = document.createElement("iframe");
+      iframe.width = "560";
+      iframe.height = "315";
+      iframe.src = `https://www.youtube.com/embed/${id}`;
+      iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+      iframe.allowFullscreen = true;
+      container.appendChild(iframe);
+    });
+  }
 
-        // Logout functionality
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                auth.signOut()
-                    .then(() => {
-                        window.location.href = 'index.html';
-                    })
-                    .catch(error => {
-                        console.error("Error signing out:", error);
-                    });
-            });
-        }
-    </script>
+  loadLessons();
+</script>
 </body>
 </html>
